@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import {Observable} from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface AuthenticationResponse {
   user_id: number;
@@ -12,7 +13,8 @@ export interface AuthenticationResponse {
 })
 export class AuthService {
 
-  private baseUrl = 'http://localhost:8083/api/pagaPe/v1/auth'; // Cambia la URL según tu backend
+  private baseUrl = `${environment.apiUrl}/api/pagaPe/v1/auth`;
+
 
   private user: any;
   constructor(private http: HttpClient) {}
@@ -58,11 +60,19 @@ export class AuthService {
     localStorage.setItem('access_token', tokens.access_token);
     localStorage.setItem('refresh_token', tokens.refresh_token);
   }
+  refreshToken(): Observable<any> {
+    const refreshToken = localStorage.getItem('refresh_token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${refreshToken}`
+    });
+    return this.http.post<any>(`${this.baseUrl}/refresh-token`, null, { headers });
+  }
+
   solicitarRecuperacion(email: string): Observable<string> {
     return this.http.post<string>(
       `${this.baseUrl}/solicitar-recuperacion?email=${email}`,
       null,
-      { responseType: 'text' as 'json' } // Asegura que se maneje como texto
+      { responseType: 'text' as 'json' }
     );
   }
 
